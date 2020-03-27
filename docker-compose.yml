@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  #composer
+  composer:
+    container_name: composer
+    image: "composer:latest"
+    networks:
+      - my_network
+    restart: always
+
+  #serve
+  nginx:
+    container_name: nginx
+    image: "nginx:latest"
+    networks:
+      - my_network
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - php
+
+  #php
+  php:
+    container_name: php
+    image: "php:zts-alpine3.11"
+    depends_on:
+      - database
+    restart: always
+    networks:
+      - my_network
+
+  #datatbase
+  database:
+    container_name: database
+    image: "mysql:latest"
+    networks:
+      - my_network
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - ./database:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD='root'
+      - MYSQL_DATABASE='laravel'
+      - MYSQL_USER='root'
+      - MYSQL_PASSWORD='root'
+
+networks:
+  my_network:
+    driver: bridge
