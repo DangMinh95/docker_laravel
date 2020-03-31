@@ -1,54 +1,61 @@
-version: "3"
-
+version: '3'
 services:
-  #composer
-  composer:
-    container_name: composer
-    image: "composer:latest"
-    networks:
-      - my_network
-    restart: always
-
-  #serve
-  nginx:
-    container_name: nginx
-    image: "nginx:latest"
-    networks:
-      - my_network
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - php
-
-  #php
+  # The Application setup php
   php:
     container_name: php
-    image: "php:zts-alpine3.11"
-    depends_on:
-      - database
-    restart: always
-    networks:
-      - my_network
-
-  #datatbase
-  database:
-    container_name: database
-    image: "mysql:latest"
-    networks:
-      - my_network
-    restart: always
-    ports:
-      - 3306:3306
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
     volumes:
-      - ./database:/var/lib/mysql
+      - ./:/var/www/html
+    networks:
+      - app-network
+  # The Web Server
+  nginx:
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    ports:
+      - 80:80
+    networks:
+      - app-network
+  # MySQL Service
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    ports:
+      - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD='root'
-      - MYSQL_DATABASE='laravel'
-      - MYSQL_USER='root'
-      - MYSQL_PASSWORD='root'
-
+    - MYSQL_DATABASE=laravel
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=root
+    volumes:
+      - ./docker/mysql/dbdata:/var/lib/mysql
+    networks:
+      - app-network
+  # Nodejs
+  node:
+    container_name: node
+    build:
+      context: .
+      dockerfile: docker/nodejs/Dockerfile
+    networks: 
+      - app-network
+  # Nodejs
+  node:
+    container_name: node
+    build:
+      context: .
+      dockerfile: docker/nodejs/Dockerfile
+    networks: 
+      - app-network
+#Docker Networks
 networks:
-  my_network:
+  app-network:
     driver: bridge
