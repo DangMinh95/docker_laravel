@@ -47,7 +47,6 @@ services:
       dockerfile: docker/nodejs/Dockerfile
     networks: 
       - app-network
-
 #Docker Networks
 networks:
   app-network:
