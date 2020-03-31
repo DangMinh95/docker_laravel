@@ -47,14 +47,7 @@ services:
       dockerfile: docker/nodejs/Dockerfile
     networks: 
       - app-network
-  # Nodejs
-  node:
-    container_name: node
-    build:
-      context: .
-      dockerfile: docker/nodejs/Dockerfile
-    networks: 
-      - app-network
+
 #Docker Networks
 networks:
   app-network:
